@@ -1,0 +1,130 @@
+# Creación de la Base de Datos
+CREATE DATABASE Supermarket;
+# Selección de la Base de Datos para realizar operaciones
+USE Supermarket;
+
+# Creación de la tabla de Direcciones
+CREATE TABLE tb_addresses(
+	pk_id INT AUTO_INCREMENT NOT NULL,
+	street VARCHAR(100) NOT NULL,
+	number VARCHAR(3) NOT NULL,
+	ward VARCHAR(100) NOT NULL,
+	city VARCHAR(100) NOT NULL,
+	PRIMARY KEY(pk_id)
+);
+
+# Creación de la tabla para proveedores
+CREATE TABLE tb_dealers(
+	pk_id INT AUTO_INCREMENT NOT NULL,
+	nit VARCHAR(15) NOT NULL,
+	registered_name VARCHAR(100) NOT NULL,
+	fk_address_id INT NOT NULL,
+	email VARCHAR(100) NOT NULL,
+	legal_agent VARCHAR(50) NOT NULL,
+	website VARCHAR(100) NOT NULL,
+	PRIMARY KEY(pk_id),
+	FOREIGN KEY(fk_address_id) REFERENCES tb_addresses(pk_id)
+);
+
+# Creación de la tabla para clientes
+CREATE TABLE tb_customers(
+	pk_id INT AUTO_INCREMENT NOT NULL,
+	document VARCHAR(15) NOT NULL,
+	first_name VARCHAR(100) NOT NULL,
+	second_name VARCHAR(100) NULL,
+	first_surname VARCHAR(100) NOT NULL,
+	second_surname VARCHAR(100) NULL,
+	fk_delivery_address INT NOT NULL,
+	PRIMARY KEY(pk_id),
+	FOREIGN KEY(fk_delivery_address) REFERENCES tb_addresses(pk_id)
+);
+
+# Creación de la tabla de teléfonos de clientes
+CREATE TABLE tb_customer_phones(
+	pk_id INT AUTO_INCREMENT NOT NULL,
+	fk_customer_id INT NOT NULL,
+	phone varchar(15) NOT NULL,
+	PRIMARY KEY(pk_id),
+	FOREIGN KEY(fk_customer_id) REFERENCES tb_customers(pk_id)
+);
+
+# Creación de la tabla categorías de productos
+CREATE TABLE tb_categories(
+	pk_id INT AUTO_INCREMENT NOT NULL,
+	category_name VARCHAR(100) NOT NULL,
+	category_description VARCHAR(100) NOT NULL,
+    PRIMARY KEY(pk_id)
+);
+
+# Cración de la tabla productos
+CREATE TABLE tb_products(
+	pk_id INT AUTO_INCREMENT NOT NULL,
+	product_name VARCHAR(100) NOT NULL,
+	price FLOAT NOT NULL,
+	stock BOOLEAN NOT NULL,
+	fk_category_id INT NOT NULL,
+	PRIMARY KEY(pk_id),
+	FOREIGN KEY(fk_category_id) REFERENCES tb_categories(pk_id)
+);
+
+
+# Un producto puede ser proveído por varios distribuidores
+CREATE TABLE tb_products_dealers(
+	pk_id INT AUTO_INCREMENT NOT NULL,
+	fk_product_id INT NOT NULL,
+	fk_dealer_id INT NOT NULL,
+	PRIMARY KEY(pk_id),
+	FOREIGN KEY(fk_product_id) REFERENCES tb_products(pk_id),
+	FOREIGN KEY(fk_dealer_id) REFERENCES tb_dealers(pk_id)
+);
+
+# Creación de la tabla estrategias de pago
+CREATE TABLE tb_payment_strategies(
+	pk_id INT AUTO_INCREMENT NOT NULL,
+	payment_strategy_name VARCHAR(20) NOT NULL,
+	PRIMARY KEY(pk_id)
+);
+
+# Creación de la tabla pagos
+CREATE TABLE tb_payments(
+	pk_id INT AUTO_INCREMENT NOT NULL,
+	fk_payment_strategy_id INT NOT NULL,
+	fk_customer_id INT NOT NULL,
+	percentage_interest FLOAT NOT NULL,
+	PRIMARY KEY(pk_id),
+	FOREIGN KEY(fk_payment_strategy_id) REFERENCES tb_payment_strategies(pk_id),
+	FOREIGN KEY(fk_customer_id) REFERENCES tb_customers(pk_id)
+);
+
+# Creación de la tabla ventas
+CREATE TABLE tb_sales(
+	pk_id INT AUTO_INCREMENT NOT NULL,
+	date DATETIME NOT NULL,
+	fk_customer_id INT NOT NULL,
+	discount FLOAT NOT NULL DEFAULT 0,
+	total_value FLOAT NOT NULL,
+	fk_payment_id INT NOT NULL,
+	PRIMARY KEY(pk_id),
+	FOREIGN KEY(fk_customer_id) REFERENCES tb_customers(pk_id),
+	FOREIGN KEY(fk_payment_id) REFERENCES tb_payments(pk_id)
+);
+
+# Creación de la tabla productos de una venta
+CREATE TABLE tb_products_sales(
+	pk_id INT AUTO_INCREMENT NOT NULL,
+	fk_sale_id INT NOT NULL,
+	fk_product_id INT NOT NULL,
+	single_price_value FLOAT NOT NULL,
+	quantity INT NOT NULL,
+	PRIMARY KEY(pk_id),
+	FOREIGN KEY(fk_sale_id) REFERENCES tb_sales(pk_id),
+	FOREIGN KEY(fk_product_id) REFERENCES tb_products(pk_id)
+);
+
+# Estrategias de Pago
+# ====================
+INSERT INTO tb_payment_strategies(payment_strategy_name) VALUES("Crédito");
+INSERT INTO tb_payment_strategies(payment_strategy_name) VALUES("Efectivo");
+INSERT INTO tb_payment_strategies(payment_strategy_name) VALUES("Tarjeta Crédito");
+INSERT INTO tb_payment_strategies(payment_strategy_name) VALUES("Tarjeta Débito");
+# ===========================================================
